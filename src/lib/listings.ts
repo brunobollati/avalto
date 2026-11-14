@@ -98,6 +98,14 @@ export function aValores(input: Input, parcial = false): Partial<NewListing> {
   if (has("es0km")) out.es0km = parseBool(input.es0km) ?? false;
   if (has("mismaUnidadId")) out.mismaUnidadId = parseEntero(input.mismaUnidadId);
   if (has("notas")) out.notas = texto(input.notas);
+  // Supuestos de la unidad: montos en ARS, porcentajes como fracción (0.05 = 5%). Vacío o null = valor por defecto.
+  if (has("supPreparacion")) out.supPreparacion = parseEntero(input.supPreparacion);
+  if (has("supInformes")) out.supInformes = parseEntero(input.supInformes);
+  if (has("supRevision")) out.supRevision = parseEntero(input.supRevision);
+  if (has("supRevisionesPorCompra")) out.supRevisionesPorCompra = parseNumero(input.supRevisionesPorCompra);
+  if (has("supDescuento")) out.supDescuento = parseNumero(input.supDescuento);
+  if (has("supTransferencia")) out.supTransferencia = parseNumero(input.supTransferencia);
+  if (has("supMargen")) out.supMargen = parseNumero(input.supMargen);
   if (has("modelId")) {
     const id = parseEntero(input.modelId);
     if (id != null) out.modelId = id;

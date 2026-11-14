@@ -269,3 +269,128 @@ export function analizar(
     },
   };
 }
+
+/** Supuestos con los que se hace la cuenta de una unidad: los propios y, donde no cargó nada, los por defecto. */
+export type SupuestosUnidad = {
+  preparacion: number;
+  descuento: number;
+  transferencia: number;
+  margen: number;
+  informes: number;
+  revision: number;
+  revisionesPorCompra: number;
+};
+
+export type CuentaUnidad = {
+  /** Valores con los que se hizo la cuenta. */
+  usados: SupuestosUnidad;
+  /** Valores por defecto (Supuestos generales, preparación del modelo, descuento medido). */
+  porDefecto: SupuestosUnidad;
+  /** Cuántos supuestos tiene cargados esta unidad. */
+  propios: number;
+  /** Con qué publicaciones se armó la mediana de referencia. */
+  referencia: string;
+  cantidad: number;
+  mediana: number | null;
+  ventaReal: number | null;
+  costoRevision: number;
+  transferencia: number | null;
+  margen: number | null;
+  precioMaxCompra: number | null;
+  precioMaxCompraUsd: number | null;
+  /** Precio publicado hoy (el último si lo rebajaron), en ARS. */
+  pedido: number | null;
+  /** Precio mínimo que dijeron por teléfono, en ARS. */
+  llamada: number | null;
+  /** Precio máximo de compra menos lo que piden (la llamada si hay, si no el publicado). Negativo = no entra. */
+  diferencia: number | null;
+};
+
+/** La cuenta de una publicación en particular: cuánto se puede pagar por ESA unidad con SUS supuestos. */
+export function cuentaUnidad(
+  l: Listing,
+  model: Model,
+  todas: Listing[],
+  s: Supuestos,
+  variantes: Variant[] = [],
+): CuentaUnidad {
+  // Referencia de precio: lo más parecido que tenga al menos 3 comparables.
+  const MIN = 3;
+  const nombre = `${model.marca} ${model.nombre}`;
+  const intentos: { filtros: Filtros; etiqueta: string }[] = [];
+  if (l.variante && l.anio != null)
+    intentos.push({ filtros: { variante: l.variante, anioDesde: l.anio, anioHasta: l.anio }, etiqueta: `${nombre} ${l.variante} ${l.anio}` });
+  if (l.variante) intentos.push({ filtros: { variante: l.variante }, etiqueta: `${nombre} ${l.variante}` });
+  if (l.anio != null) intentos.push({ filtros: { anioDesde: l.anio, anioHasta: l.anio }, etiqueta: `${nombre} ${l.anio}` });
+  const general = analizar(model, todas, {}, s, variantes).analisis;
+  let ref = general;
+  let referencia = `${nombre}, todas`;
+  for (const i of intentos) {
+    const a = analizar(model, todas, i.filtros, s, variantes).analisis;
+    if (a.cantidad >= MIN) {
+      ref = a;
+      referencia = i.etiqueta;
+      break;
+    }
+  }
+
+  const porDefecto: SupuestosUnidad = {
+    preparacion: model.preparacionArs,
+    // El descuento por defecto es el del modelo entero: medido en llamadas si alcanzan, si no el supuesto.
+    descuento: general.descuentoUsado,
+    transferencia: s.transferencia,
+    margen: s.margen,
+    informes: s.informes,
+    revision: s.revision,
+    revisionesPorCompra: s.revisionesPorCompra,
+  };
+  const propiosVals: Partial<SupuestosUnidad> = {
+    preparacion: l.supPreparacion ?? undefined,
+    descuento: l.supDescuento ?? undefined,
+    transferencia: l.supTransferencia ?? undefined,
+    margen: l.supMargen ?? undefined,
+    informes: l.supInformes ?? undefined,
+    revision: l.supRevision ?? undefined,
+    revisionesPorCompra: l.supRevisionesPorCompra ?? undefined,
+  };
+  const usados = { ...porDefecto };
+  let propios = 0;
+  for (const k of Object.keys(usados) as (keyof SupuestosUnidad)[]) {
+    const v = propiosVals[k];
+    if (v != null) {
+      usados[k] = v;
+      propios++;
+    }
+  }
+
+  const med = ref.mediana;
+  const ventaReal = med == null ? null : med * (1 - usados.descuento);
+  const costoRevision = usados.revision * usados.revisionesPorCompra;
+  const transferencia = ventaReal == null ? null : ventaReal * usados.transferencia;
+  const margen = ventaReal == null ? null : ventaReal * usados.margen;
+  const precioMaxCompra =
+    ventaReal == null
+      ? null
+      : ventaReal - costoRevision - usados.informes - usados.preparacion - transferencia! - margen!;
+  const tc = l.tcPropio || s.tc;
+  const pedido = aArs(l.ultimoPrecio ?? l.precio, l, s.tc);
+  const llamada = aArs(l.llamadaPrecioMin, l, s.tc);
+  const piden = llamada ?? pedido;
+  return {
+    usados,
+    porDefecto,
+    propios,
+    referencia,
+    cantidad: ref.cantidad,
+    mediana: med,
+    ventaReal,
+    costoRevision,
+    transferencia,
+    margen,
+    precioMaxCompra,
+    precioMaxCompraUsd: precioMaxCompra != null && tc ? precioMaxCompra / tc : null,
+    pedido,
+    llamada,
+    diferencia: precioMaxCompra != null && piden != null ? precioMaxCompra - piden : null,
+  };
+}

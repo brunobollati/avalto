@@ -21,6 +21,11 @@ function etiquetaCorta(l: Listing) {
   return [l.anio, l.motor, l.version, l.km != null ? `${num(l.km)} km` : null].filter(Boolean).join(" · ");
 }
 
+const conSupuestos = (l: Listing) =>
+  [l.supPreparacion, l.supDescuento, l.supTransferencia, l.supMargen, l.supInformes, l.supRevision, l.supRevisionesPorCompra].some(
+    (v) => v != null,
+  );
+
 function Fila({ label, valor, ayuda, fuerte }: { label: string; valor: string; ayuda?: string; fuerte?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1.5">
@@ -251,7 +256,7 @@ export default async function ModeloPage({
               <Fila label="Precio de venta real estimado" valor={ars(a.ventaReal)} fuerte />
               <Fila label="Revisión del mecánico" valor={`− ${ars(a.costoRevision)}`} />
               <Fila label="Informes previos" valor={`− ${ars(a.informes)}`} />
-              <Fila label="Preparación" valor={`− ${ars(a.preparacion)}`} ayuda="Se cambia en los datos del modelo" />
+              <Fila label="Preparación" valor={`− ${ars(a.preparacion)}`} ayuda="Valor por defecto del modelo. La de cada unidad se carga en su publicación" />
               <Fila label="Transferencia" valor={`− ${ars(a.transferencia)}`} ayuda={pct(s.transferencia)} />
               <Fila label="Margen objetivo" valor={`− ${ars(a.margen)}`} ayuda={pct(s.margen, 0)} />
               {a.rebajadas > 0 && (
@@ -427,8 +432,11 @@ export default async function ModeloPage({
                     <td>{l.estado}</td>
                     <td className="whitespace-nowrap">{fecha(l.fechaRelevamiento)}</td>
                     <td>
-                      <Link href={`/publicaciones/${l.id}`} className="enlace">Editar</Link>
-                      <div className="text-[12px] text-muted">#{l.id}</div>
+                      <Link href={`/publicaciones/${l.id}`} className="enlace font-semibold">Abrir</Link>
+                      <div className="text-[12px] text-muted">
+                        #{l.id}
+                        {conSupuestos(l) ? " · con supuestos" : ""}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -476,7 +484,7 @@ export default async function ModeloPage({
                   <td className="der font-semibold whitespace-nowrap">{money(l.precio, l.moneda)}</td>
                   <td className="whitespace-nowrap">{fecha(l.fechaRelevamiento)}</td>
                   <td>
-                    <Link href={`/publicaciones/${l.id}`} className="enlace">Editar</Link>
+                    <Link href={`/publicaciones/${l.id}`} className="enlace font-semibold">Abrir</Link>
                   </td>
                 </tr>
               ))}
@@ -517,7 +525,7 @@ export default async function ModeloPage({
             </select>
           </div>
           <div>
-            <label className="etiqueta" htmlFor="m-prep">Preparación después de comprar (ARS)</label>
+            <label className="etiqueta" htmlFor="m-prep">Preparación por defecto (ARS)</label>
             <input id="m-prep" name="preparacionArs" defaultValue={model.preparacionArs} inputMode="numeric" className="campo" />
           </div>
           <button className="btn">Guardar modelo</button>

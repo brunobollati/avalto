@@ -81,6 +81,14 @@ export const listings = pgTable(
     // Si es la misma unidad publicada en otra plataforma, id de la publicación principal.
     mismaUnidadId: integer("misma_unidad_id"),
     notas: text("notas"),
+    // Supuestos propios de esta unidad. null = usa el valor por defecto (Supuestos generales o el modelo).
+    supPreparacion: bigint("sup_preparacion", { mode: "number" }),
+    supDescuento: doublePrecision("sup_descuento"),
+    supTransferencia: doublePrecision("sup_transferencia"),
+    supMargen: doublePrecision("sup_margen"),
+    supInformes: bigint("sup_informes", { mode: "number" }),
+    supRevision: bigint("sup_revision", { mode: "number" }),
+    supRevisionesPorCompra: doublePrecision("sup_revisiones_por_compra"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("listings_link_idx").on(t.link), index("listings_model_idx").on(t.modelId)],

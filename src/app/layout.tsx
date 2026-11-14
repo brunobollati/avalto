@@ -26,7 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <nav className="flex flex-1 gap-6 text-[14.5px] font-medium">
                 <Link href="/" className="hover:underline">Modelos</Link>
                 <Link href="/importar" className="hover:underline">Importar planilla</Link>
-                <Link href="/supuestos" className="hover:underline">Supuestos</Link>
+                <Link href="/supuestos" className="hover:underline">Supuestos por defecto</Link>
               </nav>
               <form action={logout}>
                 <button className="cursor-pointer text-[14px] text-white/75 hover:text-white">Salir</button>

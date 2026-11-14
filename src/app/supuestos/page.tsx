@@ -10,8 +10,12 @@ export default async function SupuestosPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-[28px] leading-tight font-extrabold tracking-tight">Supuestos</h1>
-        <p className="text-muted">Valen para el análisis de todos los modelos. La preparación se carga en cada modelo.</p>
+        <h1 className="text-[28px] leading-tight font-extrabold tracking-tight">Supuestos por defecto</h1>
+        <p className="max-w-[70ch] text-muted">
+          Son los valores por defecto. Se usan en el análisis general de cada modelo y como punto de partida de cada
+          unidad. Los costos de verdad se cargan en cada publicación: entrás a la publicación y en Supuestos de esta
+          unidad ponés cuánto sale prepararla, la transferencia, el margen y el resto.
+        </p>
       </div>
       <SupuestosForm
         action={guardarSupuestos}

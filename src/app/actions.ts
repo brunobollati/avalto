@@ -93,11 +93,33 @@ export async function crearPublicacion(modelId: number, _: Estado, fd: FormData)
   };
 }
 
-export async function editarPublicacion(id: number, modelId: number, _: Estado, fd: FormData): Promise<Estado> {
+export async function editarPublicacion(id: number, _: Estado, fd: FormData): Promise<Estado> {
   const r = await actualizarPublicacion(id, entradaPublicacion(fd));
   if (!r.ok) return { error: r.error };
   revalidatePath("/", "layout");
-  redirect(`/modelos/${modelId}`);
+  redirect(`/publicaciones/${id}`);
+}
+
+/** Supuestos propios de una publicación. Campo vacío = vuelve al valor por defecto. */
+export async function guardarSupuestosPublicacion(id: number, _: Estado, fd: FormData): Promise<Estado> {
+  const n = (k: string) => parseNumero(fd.get(k));
+  const p = (k: string) => {
+    const v = parseNumero(fd.get(k));
+    return v == null ? null : v / 100;
+  };
+  const r = await actualizarPublicacion(id, {
+    supPreparacion: n("supPreparacion"),
+    supDescuento: p("supDescuento"),
+    supTransferencia: p("supTransferencia"),
+    supMargen: p("supMargen"),
+    supInformes: n("supInformes"),
+    supRevision: n("supRevision"),
+    supRevisionesPorCompra: n("supRevisionesPorCompra"),
+    tcPropio: n("tcPropio"),
+  });
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/", "layout");
+  return { ok: "Supuestos de la unidad guardados." };
 }
 
 export async function eliminarPublicacion(id: number, modelId: number) {

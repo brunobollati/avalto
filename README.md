@@ -12,7 +12,9 @@ App para cargar publicaciones de utilitarios por modelo (Mercado Libre, deRuedas
 - **Misma unidad:** si un vehículo está publicado en dos plataformas, se marca y cuenta una sola vez en la mediana general (en la tabla por plataforma aparece en las dos).
 - **Análisis por modelo:** filtros por motor, versión, año, km, plataforma, vendedor y zona; mediana, rango, días publicada, comparación por plataforma, descuento medido en llamadas, precio de venta real y precio máximo de compra.
 - **Importar planilla:** se pegan las filas copiadas del Google Sheet. Re-importar no duplica: actualiza por link.
-- **Supuestos:** tipo de cambio, descuento, transferencia, margen, informes y revisión del mecánico.
+- **Publicación:** cada publicación tiene su pantalla (`/publicaciones/:id`) con los datos, el botón para editarla y sus supuestos.
+- **Supuestos de la unidad:** preparación, descuento, transferencia, margen, informes, revisión del mecánico y tipo de cambio se cargan en cada publicación, porque cuánto sale arreglarla depende de la unidad. Con eso la pantalla calcula el precio máximo de compra de esa unidad y lo compara con lo que piden.
+- **Supuestos por defecto:** los mismos valores a nivel general; se usan en el análisis del modelo y en las unidades que no tienen el suyo cargado.
 
 ## Correr en local
 
@@ -47,7 +49,7 @@ Todas las rutas piden `Authorization: Bearer $API_TOKEN`.
 | PATCH | `/api/models/:id` | Cambiar datos del modelo, incluido el precio de lista 0 km: `{"variantes":[{"nombre":"Track","lista0km":39479000,"lista0kmFecha":"2026-11-06","lista0kmFuente":"https://..."}]}` |
 | GET | `/api/listings?modelId=1` | Publicaciones de un modelo |
 | POST | `/api/listings` | Cargar una publicación o una lista |
-| PATCH | `/api/listings/:id` | Cambiar campos |
+| PATCH | `/api/listings/:id` | Cambiar campos. Supuestos de la unidad: `supPreparacion`, `supInformes`, `supRevision` (ARS), `supRevisionesPorCompra`, `supDescuento`, `supTransferencia`, `supMargen` (fracción: 0.05 = 5%). `null` vuelve al valor por defecto |
 | DELETE | `/api/listings/:id` | Borrar |
 
 ```bash

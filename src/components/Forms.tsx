@@ -55,9 +55,25 @@ export function ConfirmButton({
   );
 }
 
-type CampoSupuesto = { name: string; label: string; ayuda: string; valor: number; sufijo?: string };
+type CampoSupuesto = {
+  name: string;
+  label: string;
+  ayuda: string;
+  valor: number | null;
+  /** Lo que se usa si el campo queda vacío. */
+  porDefecto?: string;
+  sufijo?: string;
+};
 
-export function SupuestosForm({ action, campos }: { action: Accion<Estado>; campos: CampoSupuesto[] }) {
+export function SupuestosForm({
+  action,
+  campos,
+  textoBoton = "Guardar supuestos",
+}: {
+  action: Accion<Estado>;
+  campos: CampoSupuesto[];
+  textoBoton?: string;
+}) {
   const [estado, formAction, pending] = useActionState(action, null);
   return (
     <form action={formAction} className="panel divide-y divide-line">
@@ -71,7 +87,8 @@ export function SupuestosForm({ action, campos }: { action: Accion<Estado>; camp
             <input
               id={c.name}
               name={c.name}
-              defaultValue={c.valor}
+              defaultValue={c.valor ?? ""}
+              placeholder={c.porDefecto}
               inputMode="decimal"
               className="campo text-right"
             />
@@ -80,7 +97,7 @@ export function SupuestosForm({ action, campos }: { action: Accion<Estado>; camp
         </div>
       ))}
       <div className="flex items-center gap-4 px-5 py-4">
-        <button className="btn" disabled={pending}>Guardar supuestos</button>
+        <button className="btn" disabled={pending}>{textoBoton}</button>
         <Mensaje estado={estado} />
       </div>
     </form>

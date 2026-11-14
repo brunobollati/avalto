@@ -29,6 +29,13 @@
       "when": 1794674282128,
       "tag": "0003_variantes",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794683162352,
+      "tag": "0004_supuestos_unidad",
+      "breakpoints": true
     }
   ]
 }
