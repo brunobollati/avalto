@@ -1,0 +1,1 @@
+ALTER TABLE "listings" ADD COLUMN "es_0km" boolean DEFAULT false NOT NULL;

@@ -1,69 +1,119 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getDb, schema } from "@/db";
+import { ars, fecha, pct } from "@/lib/format";
+import { modelosConResumen } from "@/lib/listings";
+import { TIPOS } from "@/lib/options";
+import { getSupuestos } from "@/lib/settings";
+import { mediana, precioArs, ref0km } from "@/lib/stats";
+import { crearModelo } from "./actions";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [modelos, s, db] = await Promise.all([modelosConResumen(), getSupuestos(), getDb()]);
+  const todas = await db.select().from(schema.listings);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-[28px] leading-tight font-extrabold tracking-tight">Modelos</h1>
+        <p className="text-muted">
+          Cada modelo guarda sus publicaciones relevadas y calcula a cuánto se vende y cuánto pagar como máximo.
+        </p>
+      </div>
+
+      {modelos.length === 0 ? (
+        <p className="panel px-5 py-8 text-center text-muted">
+          Todavía no hay modelos. Agregá el primero acá abajo o{" "}
+          <Link href="/importar" className="enlace">importá la planilla de relevamiento</Link>.
+        </p>
+      ) : (
+        <div className="panel overflow-x-auto">
+          <table className="tabla">
+            <thead>
+              <tr>
+                <th>Modelo</th>
+                <th>Tipo</th>
+                <th className="der">Publicaciones</th>
+                <th className="der">Mediana publicada</th>
+                <th className="der">Más barata</th>
+                <th className="der">Más cara</th>
+                <th className="der">0 km de mercado</th>
+                <th className="der">Lista 0 km</th>
+                <th className="der">Usado contra 0 km</th>
+                <th>Último relevamiento</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modelos.map((m) => {
+                const delModelo = todas.filter((l) => l.modelId === m.id);
+                const r0 = ref0km(delModelo, s.tc);
+                const base = r0.promedio ?? m.lista0km;
+                const ps = delModelo
+                  .filter((l) => !l.es0km && l.comparable && l.mismaUnidadId == null)
+                  .map((l) => precioArs(l, s.tc))
+                  .filter((p): p is number => p != null);
+                const med = mediana(ps);
+                return (
+                  <tr key={m.id}>
+                    <td>
+                      <Link href={`/modelos/${m.id}`} className="enlace text-[16px] font-semibold">
+                        {m.marca} {m.nombre}
+                      </Link>
+                    </td>
+                    <td>{m.tipo}</td>
+                    <td className="der">{ps.length}</td>
+                    <td className="der font-semibold">{ars(med)}</td>
+                    <td className="der">{ps.length ? ars(Math.min(...ps)) : ""}</td>
+                    <td className="der">{ps.length ? ars(Math.max(...ps)) : ""}</td>
+                    <td className="der">
+                      {ars(r0.promedio)}
+                      {r0.cantidad > 0 && <div className="text-[12.5px] text-muted">{r0.cantidad} publicaciones</div>}
+                    </td>
+                    <td className="der">{ars(m.lista0km)}</td>
+                    <td className="der">
+                      {med != null && base ? (
+                        <>
+                          <span className="font-semibold">{pct(med / base, 0)}</span>
+                          <div className="text-[12.5px] text-muted">
+                            {med / base >= s.umbral0km ? "Muy cerca: mala reventa" : "Con distancia"}
+                          </div>
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td>{fecha(m.ultima)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
+
+      <section className="panel max-w-3xl p-5">
+        <h2 className="mb-3 text-[18px] font-bold">Agregar modelo</h2>
+        <form action={crearModelo} className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_160px_auto]">
+          <div>
+            <label className="etiqueta" htmlFor="marca">Marca</label>
+            <input id="marca" name="marca" className="campo" required placeholder="Renault" />
+          </div>
+          <div>
+            <label className="etiqueta" htmlFor="nombre">Modelo</label>
+            <input id="nombre" name="nombre" className="campo" required placeholder="Kangoo" />
+          </div>
+          <div>
+            <label className="etiqueta" htmlFor="tipo">Tipo</label>
+            <select id="tipo" name="tipo" className="campo">
+              {TIPOS.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          <button className="btn">Agregar modelo</button>
+        </form>
+      </section>
     </div>
   );
 }

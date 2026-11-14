@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Avalto: relevamiento de precios
 
-## Getting Started
+App para cargar publicaciones de utilitarios por modelo (Mercado Libre, deRuedas, Facebook Marketplace) y calcular a cuánto se venden de verdad y cuánto pagar como máximo. Reemplaza la planilla "Relevamiento de precios - utilitarios" y usa su misma lógica.
 
-First, run the development server:
+## Qué hace
+
+- **Modelos:** se agregan a mano; cada uno tiene sus publicaciones, su costo de preparación y, si se sigue vendiendo nuevo, el precio de lista del 0 km.
+- **Publicaciones:** precio, año, motor, versión, km, zona, vendedor, link, llamada (precio mínimo de contado) y seguimiento (rebajada, bajada, último precio). La plataforma se detecta sola por el link.
+- **Variantes:** cada modelo tiene variantes (LT, LTZ, Track, Highline). La publicación lleva `variante`; si es nueva se crea sola. Cada variante puede tener su lista oficial 0 km, y el análisis compara usado contra 0 km variante por variante.
+- **0 km:** las publicaciones de unidades nuevas se cargan en el mismo modelo con `es0km: true`. No entran en el análisis de usados; su promedio es el "0 km de mercado" contra el que se compara la mediana de los usados (general y por año). Si no hay ninguna, se compara contra la lista oficial.
+- **No comparable:** la publicación queda guardada pero no entra en el análisis.
+- **Misma unidad:** si un vehículo está publicado en dos plataformas, se marca y cuenta una sola vez en la mediana general (en la tabla por plataforma aparece en las dos).
+- **Análisis por modelo:** filtros por motor, versión, año, km, plataforma, vendedor y zona; mediana, rango, días publicada, comparación por plataforma, descuento medido en llamadas, precio de venta real y precio máximo de compra.
+- **Importar planilla:** se pegan las filas copiadas del Google Sheet. Re-importar no duplica: actualiza por link.
+- **Supuestos:** tipo de cambio, descuento, transferencia, margen, informes y revisión del mecánico.
+
+## Correr en local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre en http://localhost:3000. Contraseña local: `avalto`. Sin `DATABASE_URL` usa una base Postgres embebida (PGlite) guardada en `./data`, no hay que instalar nada.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Subir a Railway
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `railway login` y, dentro de esta carpeta, `railway init`.
+2. Agregar una base: `railway add --database postgres`.
+3. En el servicio de la app, cargar las variables:
+   - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`
+   - `APP_PASSWORD` = la contraseña para entrar
+   - `SESSION_SECRET` = un texto largo al azar
+   - `API_TOKEN` = otro texto largo al azar (para cargar por API)
+4. `railway up` y después `railway domain` para obtener la URL.
 
-## Learn More
+Las tablas se crean solas la primera vez que entra un pedido (migraciones en `./drizzle`).
 
-To learn more about Next.js, take a look at the following resources:
+## API (para cargar desde el chat con Claude)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Todas las rutas piden `Authorization: Bearer $API_TOKEN`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Método | Ruta | Para qué |
+|---|---|---|
+| GET | `/api/models` | Lista de modelos con su id |
+| POST | `/api/models` | Crear modelo: `{"modelo":"Hilux","marca":"Toyota","tipo":"Pick-up"}` |
+| PATCH | `/api/models/:id` | Cambiar datos del modelo, incluido el precio de lista 0 km: `{"variantes":[{"nombre":"Track","lista0km":39479000,"lista0kmFecha":"2026-11-06","lista0kmFuente":"https://..."}]}` |
+| GET | `/api/listings?modelId=1` | Publicaciones de un modelo |
+| POST | `/api/listings` | Cargar una publicación o una lista |
+| PATCH | `/api/listings/:id` | Cambiar campos |
+| DELETE | `/api/listings/:id` | Borrar |
 
-## Deploy on Vercel
+```bash
+curl -X POST "$URL/api/listings" -H "Authorization: Bearer $API_TOKEN" -H "content-type: application/json" -d '{
+  "modelo": "Kangoo",
+  "link": "https://auto.mercadolibre.com.ar/MLA-...",
+  "precio": 17500000, "moneda": "ARS",
+  "anio": 2018, "motor": "Diésel", "version": "Furgón", "km": 152535,
+  "zona": "Mendoza", "vendedor": "Particular",
+  "diasPublicada": 19, "titulo": "Kangoo II Express Confort 1.5 dCi",
+  "notas": "Único dueño."
+}'
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Campos: `modelo` o `modelId`, `link`, `plataforma`, `variante`, `titulo`, `fechaRelevamiento`, `anio`, `motor` (Nafta, Diésel, GNC), `version` (Furgón, Mixta, Cabina simple, Cabina extendida, Cabina doble, Otra), `km`, `zona`, `vendedor` (Particular, Agencia), `moneda` (ARS, USD), `precio`, `tcPropio`, `diasPublicada` o `fechaPublicacion`, `llamadaFecha`, `llamadaPrecioMin`, `llamadaContado`, `revisionFecha`, `estado` (Activa, Rebajada, Bajada), `ultimoPrecio`, `comparable`, `es0km`, `mismaUnidadId`, `notas`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Solo `precio` y el modelo son obligatorios. Si el `link` ya existe, se actualiza esa publicación con los campos enviados. Si el modelo no existe, se crea.
+
+## Cómo está armado
+
+- Next.js 16 (App Router) + TypeScript + Tailwind 4.
+- Drizzle ORM. Esquema en `src/db/schema.ts`; después de cambiarlo: `npm run db:generate`.
+- Cálculo del análisis en `src/lib/stats.ts`; normalización de datos en `src/lib/listings.ts`.
+- Login por contraseña única con cookie firmada (`src/lib/auth.ts`, `src/proxy.ts`).
