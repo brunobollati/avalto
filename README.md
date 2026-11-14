@@ -1,4 +1,4 @@
-# Avalto: relevamiento de precios
+# Radar (Avalto): relevamiento de precios
 
 App para cargar publicaciones de utilitarios por modelo (Mercado Libre, deRuedas, Facebook Marketplace) y calcular a cuánto se venden de verdad y cuánto pagar como máximo. Reemplaza la planilla "Relevamiento de precios - utilitarios" y usa su misma lógica.
 

@@ -7,7 +7,7 @@ import { SESSION_COOKIE, validSession } from "@/lib/auth";
 import { logout } from "./actions";
 
 export const metadata: Metadata = {
-  title: "Avalto · Relevamiento de precios",
+  title: "Radar · Avalto",
   description: "Publicaciones y análisis de precios de utilitarios",
 };
 
@@ -20,7 +20,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <header className="bg-ink text-white">
             <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-3">
               <Link href="/" className="text-[19px] font-extrabold tracking-tight">
-                Avalto
+                Radar
+                <span className="ml-2 text-[13px] font-medium text-white/60">Avalto</span>
               </Link>
               <nav className="flex flex-1 gap-6 text-[14.5px] font-medium">
                 <Link href="/" className="hover:underline">Modelos</Link>

@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Avalto: relevamiento de precios
+# Radar (Avalto): relevamiento de precios
 
 Leé README.md para el alcance y la API.
 
