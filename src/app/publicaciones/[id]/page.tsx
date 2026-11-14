@@ -193,8 +193,7 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
               ]}
             />
             <p className="text-[13.5px] text-muted">
-              Los valores por defecto se cambian en <Link href="/supuestos" className="enlace">Supuestos por defecto</Link> y,
-              la preparación, en los datos del modelo.
+              Los valores por defecto se cambian en <Link href="/supuestos" className="enlace">Supuestos por defecto</Link> .
             </p>
           </section>
         </div>

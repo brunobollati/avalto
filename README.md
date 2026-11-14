@@ -4,17 +4,17 @@ App para cargar publicaciones de utilitarios por modelo (Mercado Libre, deRuedas
 
 ## Qué hace
 
-- **Modelos:** se agregan a mano; cada uno tiene sus publicaciones, su costo de preparación y, si se sigue vendiendo nuevo, el precio de lista del 0 km.
+- **Modelos:** se agregan a mano; cada uno tiene sus publicaciones y, si se sigue vendiendo nuevo, el precio de lista del 0 km.
 - **Publicaciones:** precio, año, motor, versión, km, zona, vendedor, link, llamada (precio mínimo de contado) y seguimiento (rebajada, bajada, último precio). La plataforma se detecta sola por el link.
 - **Variantes:** cada modelo tiene variantes (LT, LTZ, Track, Highline). La publicación lleva `variante`; si es nueva se crea sola. Cada variante puede tener su lista oficial 0 km, y el análisis compara usado contra 0 km variante por variante.
 - **0 km:** las publicaciones de unidades nuevas se cargan en el mismo modelo con `es0km: true`. No entran en el análisis de usados; su promedio es el "0 km de mercado" contra el que se compara la mediana de los usados (general y por año). Si no hay ninguna, se compara contra la lista oficial.
 - **No comparable:** la publicación queda guardada pero no entra en el análisis.
 - **Misma unidad:** si un vehículo está publicado en dos plataformas, se marca y cuenta una sola vez en la mediana general (en la tabla por plataforma aparece en las dos).
-- **Análisis por modelo:** filtros por motor, versión, año, km, plataforma, vendedor y zona; mediana, rango, días publicada, comparación por plataforma, descuento medido en llamadas, precio de venta real y precio máximo de compra.
+- **Análisis por modelo:** filtros por motor, versión, año, km, plataforma, vendedor y zona; mediana, rango, días publicada, comparación por plataforma, descuento medido en llamadas, y precio de venta real. El precio máximo de compra no se calcula por modelo: va en cada publicación.
 - **Importar planilla:** se pegan las filas copiadas del Google Sheet. Re-importar no duplica: actualiza por link.
 - **Publicación:** cada publicación tiene su pantalla (`/publicaciones/:id`) con los datos, el botón para editarla y sus supuestos.
 - **Supuestos de la unidad:** preparación, descuento, transferencia, margen, informes, revisión del mecánico y tipo de cambio se cargan en cada publicación, porque cuánto sale arreglarla depende de la unidad. Con eso la pantalla calcula el precio máximo de compra de esa unidad y lo compara con lo que piden.
-- **Supuestos por defecto:** los mismos valores a nivel general; se usan en el análisis del modelo y en las unidades que no tienen el suyo cargado.
+- **Supuestos por defecto:** los mismos valores a nivel general; son el punto de partida de las unidades que no tienen el suyo cargado.
 
 ## Correr en local
 

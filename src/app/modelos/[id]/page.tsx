@@ -6,7 +6,7 @@ import type { Listing } from "@/db/schema";
 import { ConfirmButton, PedirActualizacion } from "@/components/Forms";
 import { ListingForm } from "@/components/ListingForm";
 import { Scatter } from "@/components/Scatter";
-import { ars, fecha, hoy, money, num, pct, usd } from "@/lib/format";
+import { ars, fecha, hoy, money, num, pct } from "@/lib/format";
 import { MOTORES, PLATAFORMAS, TIPOS, VENDEDORES, VERSIONES } from "@/lib/options";
 import { parseEntero } from "@/lib/parse";
 import { getSupuestos } from "@/lib/settings";
@@ -227,15 +227,15 @@ export default async function ModeloPage({
         <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <section className="panel p-5">
             <div className="flex items-start justify-between gap-3">
-              <h2 className="text-[18px] font-bold">Precio máximo de compra</h2>
+              <h2 className="text-[18px] font-bold">Precio de mercado</h2>
               <span className="marca-chip">{a.alcanza ? "Alcanza para decidir" : "Seguí relevando"}</span>
             </div>
             <p className="mt-1 text-[38px] leading-none font-extrabold tracking-tight tabular-nums">
-              {ars(a.precioMaxCompra)}
+              {ars(a.mediana)}
             </p>
             <p className="mt-1 text-muted">
-              {a.precioMaxCompraUsd != null ? `${usd(a.precioMaxCompraUsd)} · ` : ""}
-              Si el vendedor no baja hasta acá, no se compra.
+              Mediana de lo publicado. El precio máximo de compra se calcula en cada publicación, con los supuestos de
+              esa unidad.
             </p>
             <dl className="mt-4 divide-y divide-line border-t border-line">
               <Fila
@@ -254,11 +254,6 @@ export default async function ModeloPage({
                 }
               />
               <Fila label="Precio de venta real estimado" valor={ars(a.ventaReal)} fuerte />
-              <Fila label="Revisión del mecánico" valor={`− ${ars(a.costoRevision)}`} />
-              <Fila label="Informes previos" valor={`− ${ars(a.informes)}`} />
-              <Fila label="Preparación" valor={`− ${ars(a.preparacion)}`} ayuda="Valor por defecto del modelo. La de cada unidad se carga en su publicación" />
-              <Fila label="Transferencia" valor={`− ${ars(a.transferencia)}`} ayuda={pct(s.transferencia)} />
-              <Fila label="Margen objetivo" valor={`− ${ars(a.margen)}`} ayuda={pct(s.margen, 0)} />
               {a.rebajadas > 0 && (
                 <Fila label="Rebaja mediana en el seguimiento" valor={pct(a.rebajaMediana)} ayuda={`${a.rebajadas} publicaciones rebajadas`} />
               )}
@@ -523,10 +518,6 @@ export default async function ModeloPage({
                 <option key={t}>{t}</option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="etiqueta" htmlFor="m-prep">Preparación por defecto (ARS)</label>
-            <input id="m-prep" name="preparacionArs" defaultValue={model.preparacionArs} inputMode="numeric" className="campo" />
           </div>
           <button className="btn">Guardar modelo</button>
           <div>

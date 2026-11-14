@@ -12,9 +12,9 @@ export default async function SupuestosPage() {
       <div>
         <h1 className="text-[28px] leading-tight font-extrabold tracking-tight">Supuestos por defecto</h1>
         <p className="max-w-[70ch] text-muted">
-          Son los valores por defecto. Se usan en el análisis general de cada modelo y como punto de partida de cada
-          unidad. Los costos de verdad se cargan en cada publicación: entrás a la publicación y en Supuestos de esta
-          unidad ponés cuánto sale prepararla, la transferencia, el margen y el resto.
+          Los supuestos son de cada publicación: entrás a la unidad y cargás cuánto sale prepararla, la transferencia,
+          el margen y el resto. Estos son solo los valores de partida de una unidad que todavía no tiene los suyos. El
+          modelo no hace cuenta de compra.
         </p>
       </div>
       <SupuestosForm
@@ -24,6 +24,7 @@ export default async function SupuestosPage() {
           { name: "descuento", label: "Descuento de negociación supuesto", valor: p(s.descuento), sufijo: "%", ayuda: "Se usa mientras no haya llamadas suficientes para medirlo." },
           { name: "llamadasMin", label: "Llamadas mínimas para usar el descuento medido", valor: s.llamadasMin, ayuda: "Con esta cantidad de llamadas en el filtro, el análisis reemplaza el supuesto por la mediana de lo que te dijeron." },
           { name: "pubsMin", label: "Publicaciones mínimas para sacar conclusión", valor: s.pubsMin, ayuda: "Con menos publicaciones comparables la mediana es poco confiable." },
+          { name: "preparacion", label: "Preparación (ARS por unidad)", valor: s.preparacion, ayuda: "Punto de partida hasta que cargás lo que sale preparar cada unidad en su publicación." },
           { name: "transferencia", label: "Transferencia del vehículo", valor: p(s.transferencia), sufijo: "%", ayuda: "Sobre el precio de venta: arancel del registro, sellos y gestoría." },
           { name: "margen", label: "Margen objetivo", valor: p(s.margen), sufijo: "%", ayuda: "Sobre el precio de venta: lo que tiene que quedar por unidad después de todos los costos." },
           { name: "informes", label: "Informes previos a la transferencia (ARS por compra)", valor: s.informes, ayuda: "Informe de dominio, multas y deudas." },

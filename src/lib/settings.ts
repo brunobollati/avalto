@@ -11,6 +11,7 @@ export const DEFAULTS: Supuestos = {
   informes: 50000,
   revision: 100000,
   revisionesPorCompra: 2,
+  preparacion: 1000000,
   umbral0km: 0.85,
 };
 

@@ -146,6 +146,7 @@ export async function guardarSupuestos(_: Estado, fd: FormData): Promise<Estado>
     informes: n("informes"),
     revision: n("revision"),
     revisionesPorCompra: n("revisionesPorCompra"),
+    preparacion: n("preparacion"),
     umbral0km: p("umbral0km"),
   });
   revalidatePath("/", "layout");

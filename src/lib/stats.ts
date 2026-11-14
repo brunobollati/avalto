@@ -11,6 +11,8 @@ export type Supuestos = {
   informes: number;
   revision: number;
   revisionesPorCompra: number;
+  /** Preparación por defecto de una unidad (ARS), hasta que se carga la suya. */
+  preparacion: number;
   umbral0km: number;
 };
 
@@ -335,7 +337,7 @@ export function cuentaUnidad(
   }
 
   const porDefecto: SupuestosUnidad = {
-    preparacion: model.preparacionArs,
+    preparacion: s.preparacion,
     // El descuento por defecto es el del modelo entero: medido en llamadas si alcanzan, si no el supuesto.
     descuento: general.descuentoUsado,
     transferencia: s.transferencia,
