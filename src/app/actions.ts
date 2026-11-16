@@ -136,6 +136,12 @@ export async function alternarGuardada(id: number, guardada: boolean) {
   revalidatePath("/", "layout");
 }
 
+/** Marca (o desmarca) que ya se contactó al vendedor de la unidad. */
+export async function alternarContactada(id: number, contactada: boolean) {
+  await actualizarPublicacion(id, { contactada });
+  revalidatePath("/", "layout");
+}
+
 export async function eliminarPublicacion(id: number, modelId: number) {
   const db = await getDb();
   await db.delete(schema.listings).where(eq(schema.listings.id, id));

@@ -116,6 +116,9 @@ export function aValores(input: Input, parcial = false): Partial<NewListing> {
     // Un comentario solo también guarda la unidad.
     if (out.guardadaComentario && !has("guardada")) out.guardada = true;
   }
+  // Contacto con el vendedor: `contactada` true o false, o directamente la fecha.
+  if (has("contactadaFecha")) out.contactadaFecha = parseFecha(input.contactadaFecha);
+  else if (has("contactada")) out.contactadaFecha = parseBool(input.contactada) ? hoy() : null;
   if (has("modelId")) {
     const id = parseEntero(input.modelId);
     if (id != null) out.modelId = id;

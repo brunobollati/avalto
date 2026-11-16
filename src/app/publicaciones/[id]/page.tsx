@@ -5,8 +5,8 @@ import { getDb, schema } from "@/db";
 import { GuardadaForm, SupuestosForm } from "@/components/Forms";
 import { ars, fecha, money, num, pct, usd } from "@/lib/format";
 import { getSupuestos } from "@/lib/settings";
-import { cuentaUnidad, diasPublicada } from "@/lib/stats";
-import { alternarGuardada, guardarEnLista, guardarSupuestosPublicacion } from "../../actions";
+import { contacto, cuentaUnidad, diasPublicada } from "@/lib/stats";
+import { alternarContactada, alternarGuardada, guardarEnLista, guardarSupuestosPublicacion } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +48,7 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
   const c = l.es0km ? null : cuentaUnidad(l, model, todas, s, variantes);
   const p = (v: number | null) => (v == null ? null : Math.round(v * 10000) / 100);
   const dias = diasPublicada(l);
+  const ct = contacto(l);
   const titulo =
     [model.marca, model.nombre, l.variante, l.anio].filter(Boolean).join(" ") + (l.es0km ? " 0 km" : "");
   const origen = (propio: unknown) => (propio != null ? "De esta unidad" : "Por defecto");
@@ -64,6 +65,9 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
           {l.titulo && <p className="text-muted">{l.titulo}</p>}
           <div className="mt-1 flex flex-wrap gap-1">
             {l.guardada && <Link href="/guardadas" className="marca-chip">★ Guardada</Link>}
+            <span className="marca-chip">
+              {ct.contactada ? `✓ Contactada${ct.fecha ? ` el ${fecha(ct.fecha)}` : ""}` : "Sin contactar"}
+            </span>
             {!l.comparable && <span className="marca-chip">No comparable</span>}
             {l.mismaUnidadId != null && (
               <Link href={`/publicaciones/${l.mismaUnidadId}`} className="marca-chip">Misma unidad que #{l.mismaUnidadId}</Link>
@@ -71,6 +75,13 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {!ct.porLlamada && (
+            <form action={alternarContactada.bind(null, id, !ct.contactada)}>
+              <button className="btn btn-sec cursor-pointer">
+                {ct.contactada ? "Desmarcar contactada" : "Marcar contactada"}
+              </button>
+            </form>
+          )}
           {l.link && (
             <a href={l.link} target="_blank" rel="noreferrer" className="btn btn-sec">Ver en {l.plataforma}</a>
           )}

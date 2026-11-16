@@ -93,6 +93,8 @@ export const listings = pgTable(
     guardada: boolean("guardada").notNull().default(false),
     guardadaComentario: text("guardada_comentario"),
     guardadaFecha: timestamp("guardada_fecha"),
+    // Día en que se contactó al vendedor. null = sin contactar (salvo que haya una llamada cargada).
+    contactadaFecha: date("contactada_fecha"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("listings_link_idx").on(t.link), index("listings_model_idx").on(t.modelId)],

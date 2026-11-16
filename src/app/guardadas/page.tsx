@@ -3,19 +3,32 @@ import { desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { ars, fecha, money, num } from "@/lib/format";
 import { getSupuestos } from "@/lib/settings";
-import { cuentaUnidad, diasPublicada } from "@/lib/stats";
-import { alternarGuardada } from "../actions";
+import { contacto, cuentaUnidad, diasPublicada } from "@/lib/stats";
+import { alternarContactada, alternarGuardada } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function GuardadasPage() {
+const VISTAS = [
+  { clave: "todas", texto: "Todas" },
+  { clave: "sin-contactar", texto: "Sin contactar" },
+  { clave: "contactadas", texto: "Contactadas" },
+] as const;
+
+export default async function GuardadasPage({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
+  const pedido = (await searchParams).ver;
+  const ver = VISTAS.find((v) => v.clave === pedido)?.clave ?? "todas";
   const db = await getDb();
-  const [guardadas, s] = await Promise.all([
+  const [todasGuardadas, s] = await Promise.all([
     db.select().from(schema.listings).where(eq(schema.listings.guardada, true)).orderBy(desc(schema.listings.guardadaFecha)),
     getSupuestos(),
   ]);
+  const sinContactar = todasGuardadas.filter((l) => !contacto(l).contactada).length;
+  const cantidad = { todas: todasGuardadas.length, "sin-contactar": sinContactar, contactadas: todasGuardadas.length - sinContactar };
+  const guardadas = todasGuardadas.filter(
+    (l) => ver === "todas" || contacto(l).contactada === (ver === "contactadas"),
+  );
   // La cuenta de cada unidad necesita las demás publicaciones de su modelo.
-  const [todas, modelos, variantes] = guardadas.length
+  const [todas, modelos, variantes] = todasGuardadas.length
     ? await Promise.all([
         db.select().from(schema.listings),
         db.select().from(schema.models),
@@ -32,10 +45,28 @@ export default async function GuardadasPage() {
         </p>
       </div>
 
-      {guardadas.length === 0 ? (
+      {todasGuardadas.length > 0 && (
+        <nav className="flex flex-wrap gap-2">
+          {VISTAS.map((v) => (
+            <Link
+              key={v.clave}
+              href={v.clave === "todas" ? "/guardadas" : `/guardadas?ver=${v.clave}`}
+              className={`btn ${ver === v.clave ? "" : "btn-sec"}`}
+            >
+              {v.texto} ({cantidad[v.clave]})
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {todasGuardadas.length === 0 ? (
         <p className="panel px-5 py-8 text-center text-muted">
           Todavía no guardaste ninguna. En la tabla de un modelo tocá «☆ Guardar», o abrí la publicación para
           guardarla con un comentario.
+        </p>
+      ) : guardadas.length === 0 ? (
+        <p className="panel px-5 py-8 text-center text-muted">
+          {ver === "sin-contactar" ? "Ya contactaste todas las guardadas." : "Todavía no contactaste ninguna."}
         </p>
       ) : (
         <div className="panel overflow-x-auto">
@@ -43,6 +74,7 @@ export default async function GuardadasPage() {
             <thead>
               <tr>
                 <th>Unidad</th>
+                <th>Contacto</th>
                 <th>Comentario</th>
                 <th className="der">Piden</th>
                 <th className="der">Máximo de compra</th>
@@ -66,6 +98,7 @@ export default async function GuardadasPage() {
                       variantes.filter((v) => v.modelId === l.modelId),
                     );
                 const d = diasPublicada(l);
+                const ct = contacto(l);
                 return (
                   <tr key={l.id}>
                     <td>
@@ -80,6 +113,30 @@ export default async function GuardadasPage() {
                         <a href={l.link} target="_blank" rel="noreferrer" className="enlace text-[13px]">
                           Ver en {l.plataforma}
                         </a>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {ct.contactada ? (
+                        <>
+                          <span className="font-semibold text-teal">✓ Contactada</span>
+                          <div className="text-[12.5px] text-muted">
+                            {[ct.fecha ? `el ${fecha(ct.fecha)}` : null, ct.porLlamada ? "llamada cargada" : null]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
+                          {!ct.porLlamada && (
+                            <form action={alternarContactada.bind(null, l.id, false)}>
+                              <button className="enlace cursor-pointer text-[13px]">Desmarcar</button>
+                            </form>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold text-alerta">Sin contactar</span>
+                          <form action={alternarContactada.bind(null, l.id, true)}>
+                            <button className="enlace cursor-pointer text-[13px]">Marcar contactada</button>
+                          </form>
+                        </>
                       )}
                     </td>
                     <td className="max-w-[360px] whitespace-pre-line">

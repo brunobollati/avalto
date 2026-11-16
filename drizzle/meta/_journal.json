@@ -43,6 +43,13 @@
       "when": 1794801276608,
       "tag": "0005_guardadas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794866905683,
+      "tag": "0006_contactada",
+      "breakpoints": true
     }
   ]
 }

@@ -15,3 +15,4 @@ Leé README.md para el alcance y la API.
 - Las publicaciones con `es0km` no entran al análisis de usados: su promedio (última tanda relevada, 7 días) es el "0 km de mercado". El usado se compara contra eso y, si falta, contra la lista oficial de la variante o del modelo.
 - La app no busca en la web: el botón "Actualizar 0 km" copia un pedido para Claude, que busca y carga por API.
 - Guardadas: columnas `guardada`, `guardadaComentario` y `guardadaFecha` de `listings`. Es la lista de unidades que el usuario marca para volver a mirar (pantalla `/guardadas`); no cambia el análisis.
+- Contacto: `contactadaFecha` de `listings` marca que ya se habló con el vendedor. `contacto` en `src/lib/stats.ts` también cuenta como contactada la que tiene una llamada cargada. Se marca desde Guardadas o desde la publicación.

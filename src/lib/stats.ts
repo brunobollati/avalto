@@ -45,6 +45,19 @@ export function aArs(monto: number | null, l: Listing, tc: number): number | nul
 
 export const precioArs = (l: Listing, tc: number) => aArs(l.precio, l, tc);
 
+/**
+ * Si ya se contactó al vendedor: por la marca de contacto o porque hay una llamada cargada.
+ * `fecha` puede faltar (llamada cargada sin fecha).
+ */
+export function contacto(l: Listing): { contactada: boolean; fecha: string | null; porLlamada: boolean } {
+  const porLlamada = l.llamadaFecha != null || l.llamadaPrecioMin != null;
+  return {
+    contactada: l.contactadaFecha != null || porLlamada,
+    fecha: l.contactadaFecha ?? l.llamadaFecha,
+    porLlamada: l.contactadaFecha == null && porLlamada,
+  };
+}
+
 export function diasPublicada(l: Listing): number | null {
   return l.fechaPublicacion ? Math.max(0, diasEntre(l.fechaPublicacion, hoy())) : null;
 }

@@ -49,7 +49,7 @@ Todas las rutas piden `Authorization: Bearer $API_TOKEN`.
 | PATCH | `/api/models/:id` | Cambiar datos del modelo, incluido el precio de lista 0 km: `{"variantes":[{"nombre":"Track","lista0km":39479000,"lista0kmFecha":"2026-11-06","lista0kmFuente":"https://..."}]}` |
 | GET | `/api/listings?modelId=1` | Publicaciones de un modelo |
 | POST | `/api/listings` | Cargar una publicación o una lista |
-| PATCH | `/api/listings/:id` | Cambiar campos. Supuestos de la unidad: `supPreparacion`, `supInformes`, `supRevision` (ARS), `supRevisionesPorCompra`, `supDescuento`, `supTransferencia`, `supMargen` (fracción: 0.05 = 5%). `null` vuelve al valor por defecto. Guardadas: `guardada` (true o false) y `guardadaComentario`; mandar solo el comentario también la guarda |
+| PATCH | `/api/listings/:id` | Cambiar campos. Supuestos de la unidad: `supPreparacion`, `supInformes`, `supRevision` (ARS), `supRevisionesPorCompra`, `supDescuento`, `supTransferencia`, `supMargen` (fracción: 0.05 = 5%). `null` vuelve al valor por defecto. Guardadas: `guardada` (true o false) y `guardadaComentario`; mandar solo el comentario también la guarda. Contacto: `contactada` (true la marca con la fecha de hoy, false la desmarca) o `contactadaFecha` |
 | DELETE | `/api/listings/:id` | Borrar |
 
 ```bash
