@@ -166,3 +166,46 @@ export function PedirActualizacion({ modelo }: { modelo: string }) {
     </button>
   );
 }
+
+/** Panel de la publicación: guardarla en la lista con un comentario, o quitarla. */
+export function GuardadaForm({
+  action,
+  quitar,
+  guardada,
+  comentario,
+  desde,
+}: {
+  action: Accion<Estado>;
+  quitar: () => Promise<void>;
+  guardada: boolean;
+  comentario: string | null;
+  desde?: string;
+}) {
+  const [estado, formAction, pending] = useActionState(action, null);
+  return (
+    <form action={formAction} className="space-y-3">
+      <div>
+        <label className="etiqueta" htmlFor="guardadaComentario">
+          Comentario{guardada && desde ? ` · guardada el ${desde}` : ""}
+        </label>
+        <textarea
+          id="guardadaComentario"
+          name="guardadaComentario"
+          rows={3}
+          defaultValue={comentario ?? ""}
+          className="campo"
+          placeholder="Por qué te interesa: buen precio, pocos km, llamar el lunes…"
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button className="btn" disabled={pending}>{guardada ? "Guardar comentario" : "Guardar en mi lista"}</button>
+        {guardada && (
+          <button type="submit" formAction={quitar} className="btn btn-sec" disabled={pending}>
+            Quitar de guardadas
+          </button>
+        )}
+        <Mensaje estado={estado} />
+      </div>
+    </form>
+  );
+}

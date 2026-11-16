@@ -11,7 +11,7 @@ import { MOTORES, PLATAFORMAS, TIPOS, VENDEDORES, VERSIONES } from "@/lib/option
 import { parseEntero } from "@/lib/parse";
 import { getSupuestos } from "@/lib/settings";
 import { analizar, diasPublicada, precioArs, type Filtros } from "@/lib/stats";
-import { actualizarModelo, crearPublicacion, eliminarModelo, guardarVariante } from "../../actions";
+import { actualizarModelo, alternarGuardada, crearPublicacion, eliminarModelo, guardarVariante } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -432,6 +432,14 @@ export default async function ModeloPage({
                         #{l.id}
                         {conSupuestos(l) ? " · con supuestos" : ""}
                       </div>
+                      <form action={alternarGuardada.bind(null, l.id, !l.guardada)}>
+                        <button
+                          className="enlace cursor-pointer text-[13px] whitespace-nowrap"
+                          title={l.guardada ? (l.guardadaComentario ?? "Quitar de guardadas") : "Guardar en mi lista"}
+                        >
+                          {l.guardada ? "★ Guardada" : "☆ Guardar"}
+                        </button>
+                      </form>
                     </td>
                   </tr>
                 );

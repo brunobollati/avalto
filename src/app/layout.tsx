@@ -3,6 +3,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import "@fontsource-variable/archivo";
 import "./globals.css";
+import { eq, sql } from "drizzle-orm";
+import { getDb, schema } from "@/db";
 import { SESSION_COOKIE, validSession } from "@/lib/auth";
 import { logout } from "./actions";
 
@@ -13,6 +15,15 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const logged = validSession((await cookies()).get(SESSION_COOKIE)?.value);
+  let guardadas = 0;
+  if (logged) {
+    const db = await getDb();
+    const [c] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(schema.listings)
+      .where(eq(schema.listings.guardada, true));
+    guardadas = c?.n ?? 0;
+  }
   return (
     <html lang="es">
       <body>
@@ -25,6 +36,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </Link>
               <nav className="flex flex-1 gap-6 text-[14.5px] font-medium">
                 <Link href="/" className="hover:underline">Modelos</Link>
+                <Link href="/guardadas" className="hover:underline">
+                  Guardadas{guardadas > 0 ? ` (${guardadas})` : ""}
+                </Link>
                 <Link href="/importar" className="hover:underline">Importar planilla</Link>
                 <Link href="/supuestos" className="hover:underline">Supuestos por defecto</Link>
               </nav>

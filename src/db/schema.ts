@@ -89,6 +89,10 @@ export const listings = pgTable(
     supInformes: bigint("sup_informes", { mode: "number" }),
     supRevision: bigint("sup_revision", { mode: "number" }),
     supRevisionesPorCompra: doublePrecision("sup_revisiones_por_compra"),
+    // Lista de guardadas: unidades que interesan para volver a mirarlas, con un comentario propio.
+    guardada: boolean("guardada").notNull().default(false),
+    guardadaComentario: text("guardada_comentario"),
+    guardadaFecha: timestamp("guardada_fecha"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("listings_link_idx").on(t.link), index("listings_model_idx").on(t.modelId)],

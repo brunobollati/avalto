@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
-import { SupuestosForm } from "@/components/Forms";
+import { GuardadaForm, SupuestosForm } from "@/components/Forms";
 import { ars, fecha, money, num, pct, usd } from "@/lib/format";
 import { getSupuestos } from "@/lib/settings";
 import { cuentaUnidad, diasPublicada } from "@/lib/stats";
-import { guardarSupuestosPublicacion } from "../../actions";
+import { alternarGuardada, guardarEnLista, guardarSupuestosPublicacion } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +63,7 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
           <h1 className="text-[28px] leading-tight font-extrabold tracking-tight">{titulo}</h1>
           {l.titulo && <p className="text-muted">{l.titulo}</p>}
           <div className="mt-1 flex flex-wrap gap-1">
+            {l.guardada && <Link href="/guardadas" className="marca-chip">★ Guardada</Link>}
             {!l.comparable && <span className="marca-chip">No comparable</span>}
             {l.mismaUnidadId != null && (
               <Link href={`/publicaciones/${l.mismaUnidadId}`} className="marca-chip">Misma unidad que #{l.mismaUnidadId}</Link>
@@ -107,6 +108,21 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
           <Dato label="Relevada">{fecha(l.fechaRelevamiento)}</Dato>
         </dl>
         {l.notas && <p className="mt-4 border-t border-line pt-3 text-[14px] whitespace-pre-line">{l.notas}</p>}
+      </section>
+
+      <section className="panel p-5">
+        <h2 className="text-[18px] font-bold">{l.guardada ? "★ Guardada en tu lista" : "Guardar esta unidad"}</h2>
+        <p className="mb-3 text-[14px] text-muted">
+          Las guardadas quedan todas juntas en <Link href="/guardadas" className="enlace">Guardadas</Link>, con tu
+          comentario, para volver a mirarlas.
+        </p>
+        <GuardadaForm
+          action={guardarEnLista.bind(null, id)}
+          quitar={alternarGuardada.bind(null, id, false)}
+          guardada={l.guardada}
+          comentario={l.guardadaComentario}
+          desde={l.guardadaFecha ? fecha(l.guardadaFecha.toISOString()) : undefined}
+        />
       </section>
 
       {!c && (

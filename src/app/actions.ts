@@ -122,6 +122,20 @@ export async function guardarSupuestosPublicacion(id: number, _: Estado, fd: For
   return { ok: "Supuestos de la unidad guardados." };
 }
 
+/** Guarda la unidad en la lista de guardadas (o actualiza su comentario). */
+export async function guardarEnLista(id: number, _: Estado, fd: FormData): Promise<Estado> {
+  const r = await actualizarPublicacion(id, { guardada: true, guardadaComentario: fd.get("guardadaComentario") });
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/", "layout");
+  return { ok: "Guardada en tu lista." };
+}
+
+/** Botón rápido de las tablas: guarda o quita sin tocar el comentario. */
+export async function alternarGuardada(id: number, guardada: boolean) {
+  await actualizarPublicacion(id, { guardada });
+  revalidatePath("/", "layout");
+}
+
 export async function eliminarPublicacion(id: number, modelId: number) {
   const db = await getDb();
   await db.delete(schema.listings).where(eq(schema.listings.id, id));

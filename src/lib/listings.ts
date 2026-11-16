@@ -106,6 +106,16 @@ export function aValores(input: Input, parcial = false): Partial<NewListing> {
   if (has("supDescuento")) out.supDescuento = parseNumero(input.supDescuento);
   if (has("supTransferencia")) out.supTransferencia = parseNumero(input.supTransferencia);
   if (has("supMargen")) out.supMargen = parseNumero(input.supMargen);
+  // Guardadas: marcar la unidad para volver a mirarla, con un comentario.
+  if (has("guardada")) {
+    out.guardada = parseBool(input.guardada) ?? false;
+    out.guardadaFecha = out.guardada ? new Date() : null;
+  }
+  if (has("guardadaComentario")) {
+    out.guardadaComentario = texto(input.guardadaComentario);
+    // Un comentario solo también guarda la unidad.
+    if (out.guardadaComentario && !has("guardada")) out.guardada = true;
+  }
   if (has("modelId")) {
     const id = parseEntero(input.modelId);
     if (id != null) out.modelId = id;
@@ -218,6 +228,15 @@ export async function actualizarPublicacion(id: number, input: Input): Promise<R
     if (actual) v.variante = await asegurarVariante(actual.modelId, v.variante);
   }
   if (!Object.keys(v).length) return { ok: false, error: "No hay cambios." };
+  if (v.guardada) {
+    // Si ya estaba guardada se conserva la fecha en que se guardó.
+    const [actual] = await db
+      .select({ guardada: schema.listings.guardada, fecha: schema.listings.guardadaFecha })
+      .from(schema.listings)
+      .where(eq(schema.listings.id, id));
+    if (actual?.guardada) v.guardadaFecha = actual.fecha ?? new Date();
+    else v.guardadaFecha = new Date();
+  }
   try {
     const res = await db
       .update(schema.listings)
