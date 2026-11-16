@@ -53,7 +53,7 @@ export default async function PublicacionPage({ params }: { params: Promise<{ id
   const origen = (propio: unknown) => (propio != null ? "De esta unidad" : "Por defecto");
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[14px] text-muted">

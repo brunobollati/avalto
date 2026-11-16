@@ -23,7 +23,7 @@ export default async function EditarPublicacionPage({ params }: { params: Promis
   const variantes = await db.select().from(schema.variants).where(eq(schema.variants.modelId, l.modelId));
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <div>
         <p className="text-[14px] text-muted">
           <Link href="/" className="enlace">Modelos</Link> /{" "}

@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         {logged && (
           <header className="bg-ink text-white">
-            <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-8 gap-y-2 px-5 py-3">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2 px-5 py-3 lg:px-8">
               <Link href="/" className="text-[19px] font-extrabold tracking-tight">
                 Radar
                 <span className="ml-2 text-[13px] font-medium text-white/60">Avalto</span>
@@ -48,7 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </header>
         )}
-        <main className="mx-auto max-w-[1280px] px-5 py-7">{children}</main>
+        <main className="px-5 py-7 lg:px-8">{children}</main>
       </body>
     </html>
   );
