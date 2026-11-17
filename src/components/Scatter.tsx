@@ -110,21 +110,27 @@ export function Scatter({ puntos }: { puntos: Punto[] }) {
                 strokeWidth="2"
               />
             ))}
-            {/* Zona de hover más grande que el punto. */}
+            {/* Zona de hover más grande que el punto; el clic abre la publicación en otra pestaña. */}
             {data.map((p) => (
-              <circle
+              <a
                 key={`h${p.id}`}
-                cx={sx(p[eje] as number)}
-                cy={sy(p.precio)}
-                r="12"
-                fill="transparent"
-                tabIndex={0}
-                aria-label={`${p.etiqueta}, ${ars(p.precio)}`}
+                href={`/publicaciones/${p.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${p.etiqueta}, ${ars(p.precio)}. Abrir en otra pestaña`}
                 onMouseEnter={() => setActivo(p.id)}
                 onMouseLeave={() => setActivo(null)}
                 onFocus={() => setActivo(p.id)}
                 onBlur={() => setActivo(null)}
-              />
+              >
+                <circle
+                  cx={sx(p[eje] as number)}
+                  cy={sy(p.precio)}
+                  r="12"
+                  fill="transparent"
+                  className="cursor-pointer"
+                />
+              </a>
             ))}
           </svg>
           {sel && (
@@ -139,6 +145,7 @@ export function Scatter({ puntos }: { puntos: Punto[] }) {
               <div className="font-semibold">{ars(sel.precio)}</div>
               <div>{sel.etiqueta}</div>
               <div className="text-muted">{sel.plataforma}</div>
+              <div className="text-muted">Clic para abrir en Radar</div>
             </div>
           )}
         </div>
