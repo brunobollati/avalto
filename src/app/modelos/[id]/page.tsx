@@ -93,6 +93,53 @@ export default async function ModeloPage({
       etiqueta: etiquetaCorta(l) || "Sin datos de la unidad",
     }));
 
+  // Orden de la tabla de publicaciones: va en la URL (orden, dir) junto con los filtros.
+  const claves: Record<string, (l: Listing) => string | number | null> = {
+    plataforma: (l) => l.plataforma,
+    anio: (l) => l.anio,
+    motor: (l) => l.motor,
+    variante: (l) => l.variante,
+    km: (l) => l.km,
+    vendedor: (l) => l.vendedor,
+    precio: (l) => precioArs(l, s.tc) ?? l.precio,
+    llamada: (l) => l.llamadaPrecioMin,
+    dias: (l) => diasPublicada(l),
+    estado: (l) => l.estado,
+    relevada: (l) => l.fechaRelevamiento,
+  };
+  const orden = q("orden") && claves[q("orden") as string] ? (q("orden") as string) : undefined;
+  const dir = q("dir") === "desc" ? "desc" : "asc";
+  const ordenadas = orden
+    ? [...filtradas].sort((x, y) => {
+        const a1 = claves[orden](x);
+        const b1 = claves[orden](y);
+        // Las que no tienen el dato van siempre al final.
+        if (a1 == null || a1 === "") return b1 == null || b1 === "" ? 0 : 1;
+        if (b1 == null || b1 === "") return -1;
+        const c = typeof a1 === "number" && typeof b1 === "number" ? a1 - b1 : String(a1).localeCompare(String(b1), "es");
+        return dir === "desc" ? -c : c;
+      })
+    : filtradas;
+  const th = (clave: string, label: string, der = false) => {
+    const activa = orden === clave;
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) if (typeof v === "string" && v && k !== "orden" && k !== "dir") params.set(k, v);
+    params.set("orden", clave);
+    params.set("dir", activa && dir === "asc" ? "desc" : "asc");
+    return (
+      <th className={der ? "der" : ""} aria-sort={activa ? (dir === "asc" ? "ascending" : "descending") : undefined}>
+        <Link
+          href={`/modelos/${id}?${params.toString()}#publicaciones`}
+          className={`hover:underline ${activa ? "font-bold text-ink" : ""}`}
+          title={`Ordenar por ${label.toLowerCase()}`}
+        >
+          {label}
+          <span aria-hidden="true">{activa ? (dir === "asc" ? " ▲" : " ▼") : ""}</span>
+        </Link>
+      </th>
+    );
+  };
+
   const sel = (name: string, label: string, opciones: readonly string[]) => (
     <div>
       <label className="etiqueta" htmlFor={`f-${name}`}>{label}</label>
@@ -159,6 +206,8 @@ export default async function ModeloPage({
         {sel("plataforma", "Plataforma", PLATAFORMAS)}
         {sel("vendedor", "Vendedor", VENDEDORES)}
         {sel("zona", "Zona", zonas)}
+        {orden && <input type="hidden" name="orden" value={orden} />}
+        {orden && <input type="hidden" name="dir" value={dir} />}
         <div className="col-span-2 flex gap-2 sm:col-span-4 lg:col-span-5">
           <button className="btn">Filtrar</button>
           {hayFiltros && (
@@ -359,27 +408,28 @@ export default async function ModeloPage({
       )}
 
       {filtradas.length > 0 && (
-        <section className="panel overflow-x-auto">
+        <section id="publicaciones" className="panel scroll-mt-4 overflow-x-auto">
           <h2 className="px-5 pt-4 text-[18px] font-bold">Publicaciones</h2>
+          <p className="px-5 text-[13px] text-muted">Tocá el título de una columna para ordenar; otra vez para invertir.</p>
           <table className="tabla mt-1">
             <thead>
               <tr>
-                <th>Plataforma</th>
-                <th>Año</th>
-                <th>Motor</th>
-                <th>Variante y versión</th>
-                <th className="der">Km</th>
-                <th>Vendedor</th>
-                <th className="der">Precio publicado</th>
-                <th className="der">Mínimo en llamada</th>
-                <th className="der">Días</th>
-                <th>Estado</th>
-                <th>Relevada</th>
+                {th("plataforma", "Plataforma")}
+                {th("anio", "Año")}
+                {th("motor", "Motor")}
+                {th("variante", "Variante y versión")}
+                {th("km", "Km", true)}
+                {th("vendedor", "Vendedor")}
+                {th("precio", "Precio publicado", true)}
+                {th("llamada", "Mínimo en llamada", true)}
+                {th("dias", "Días", true)}
+                {th("estado", "Estado")}
+                {th("relevada", "Relevada")}
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {filtradas.map((l) => {
+              {ordenadas.map((l) => {
                 const d = diasPublicada(l);
                 return (
                   <tr key={l.id} className={l.comparable ? "" : "text-muted"}>
